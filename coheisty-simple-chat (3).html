@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coheisty AI Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #343541;
+            color: #ececf1;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: #202123;
+            border-bottom: 1px solid #4d4d4f;
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .model-badge {
+            background: #00c2ff;
+            color: #000;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .title {
+            font-size: 0.95rem;
+            color: #ececf1;
+        }
+
+        .new-chat-btn {
+            background: transparent;
+            border: 1px solid #565869;
+            color: #ececf1;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .new-chat-btn:hover {
+            background: #40414f;
+        }
+
+        /* Chat Messages */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0;
+        }
+
+        .message-wrapper {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid #4d4d4f;
+        }
+
+        .message-wrapper.user {
+            background: #343541;
+        }
+
+        .message-wrapper.assistant {
+            background: #444654;
+        }
+
+        .message {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .avatar.user {
+            background: #5436da;
+        }
+
+        .avatar.assistant {
+            background: #19c37d;
+            color: #fff;
+        }
+
+        .message-content {
+            flex: 1;
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        .message-content h4 {
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .message-content p {
+            margin-bottom: 0.75rem;
+        }
+
+        .message-content ul {
+            margin: 0.75rem 0 0.75rem 1.5rem;
+        }
+
+        .message-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .message-content strong {
+            font-weight: 600;
+        }
+
+        /* Welcome Message */
+        .welcome {
+            text-align: center;
+            padding: 4rem 2rem;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        .welcome h2 {
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            color: #ececf1;
+        }
+
+        .welcome p {
+            color: #c5c5d2;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .example-prompts {
+            display: grid;
+            gap: 0.75rem;
+            margin-top: 2rem;
+        }
+
+        .example-prompt {
+            background: #40414f;
+            border: 1px solid #565869;
+            padding: 0.875rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            font-size: 0.875rem;
+            color: #ececf1;
+        }
+
+        .example-prompt:hover {
+            background: #4a4b5f;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 1rem;
+            background: #343541;
+        }
+
+        .input-container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .chat-input {
+            width: 100%;
+            background: #40414f;
+            border: 1px solid #565869;
+            border-radius: 8px;
+            padding: 0.875rem 3rem 0.875rem 1rem;
+            color: #ececf1;
+            font-size: 0.95rem;
+            resize: none;
+            font-family: inherit;
+            line-height: 1.5;
+            min-height: 52px;
+            max-height: 200px;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #ececf1;
+        }
+
+        .chat-input::placeholder {
+            color: #8e8ea0;
+        }
+
+        .send-button {
+            position: absolute;
+            right: 0.5rem;
+            bottom: 0.625rem;
+            background: #19c37d;
+            border: none;
+            color: #000;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .send-button:hover {
+            background: #1a9d66;
+        }
+
+        .send-button:disabled {
+            background: #40414f;
+            cursor: not-allowed;
+        }
+
+        .send-icon {
+            font-size: 1rem;
+        }
+
+        /* Upload Button */
+        .upload-btn {
+            position: absolute;
+            left: 0.5rem;
+            bottom: 0.625rem;
+            background: transparent;
+            border: none;
+            color: #8e8ea0;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 1.2rem;
+        }
+
+        .upload-btn:hover {
+            background: #40414f;
+            color: #ececf1;
+        }
+
+        /* Upload Modal */
+        .upload-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .upload-modal.active {
+            display: flex;
+        }
+
+        .upload-content {
+            background: #343541;
+            border: 1px solid #565869;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .upload-content h3 {
+            margin-bottom: 1rem;
+            color: #ececf1;
+        }
+
+        .upload-area {
+            border: 2px dashed #565869;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            margin: 1rem 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .upload-area:hover {
+            border-color: #8e8ea0;
+            background: #40414f;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+
+        .modal-btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .modal-btn-primary {
+            background: #19c37d;
+            border: none;
+            color: #000;
+            font-weight: 600;
+        }
+
+        .modal-btn-primary:hover {
+            background: #1a9d66;
+        }
+
+        .modal-btn-secondary {
+            background: transparent;
+            border: 1px solid #565869;
+            color: #ececf1;
+        }
+
+        .modal-btn-secondary:hover {
+            background: #40414f;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 0.3rem;
+            padding: 0.5rem 0;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: #ececf1;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                opacity: 0.3;
+            }
+            30% {
+                opacity: 1;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #343541;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #565869;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6e6e80;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .message {
+                gap: 1rem;
+            }
+
+            .welcome {
+                padding: 2rem 1rem;
+            }
+
+            .welcome h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <div class="model-badge">Coheisty AI</div>
+                <div class="title">Cybersecurity Sales Assistant</div>
+            </div>
+            <button class="new-chat-btn" onclick="clearChat()">New chat</button>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-messages" id="chat-messages">
+            <div class="welcome">
+                <h2>Coheisty AI Sales Assistant</h2>
+                <p>I'm your cybersecurity sales intelligence partner. I analyze companies, assess threats, generate strategy, and help you close deals faster.</p>
+                
+                <div class="example-prompts">
+                    <div class="example-prompt" onclick="showUpload()">
+                        📄 Analyze a company's security landscape and identify opportunities
+                    </div>
+                    <div class="example-prompt" onclick="useExample('Perform a threat assessment and identify ransomware risks')">
+                        🎯 Perform a threat assessment and identify ransomware risks
+                    </div>
+                    <div class="example-prompt" onclick="useExample('Generate a SWOT analysis for their security posture')">
+                        📊 Generate a SWOT analysis for their security posture
+                    </div>
+                    <div class="example-prompt" onclick="useExample('Map our solutions to their specific security risks')">
+                        🗺️ Map our solutions to their specific security risks
+                    </div>
+                    <div class="example-prompt" onclick="useExample('Run a risk simulation: What if they experience a ransomware attack?')">
+                        💥 Run a risk simulation: What if they experience a ransomware attack?
+                    </div>
+                    <div class="example-prompt" onclick="useExample('Check their compliance status for HIPAA, SOC2, and GDPR')">
+                        ✅ Check their compliance status for HIPAA, SOC2, and GDPR
+                    </div>
+                    <div class="example-prompt" onclick="useExample('Generate discovery questions for a healthcare CISO')">
+                        💬 Generate discovery questions for a healthcare CISO
+                    </div>
+                    <div class="example-prompt" onclick="useExample('Create a pre-call brief with strategic recommendations')">
+                        📋 Create a pre-call brief with strategic recommendations
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+            <div class="input-container">
+                <button class="upload-btn" onclick="showUpload()" title="Upload file">
+                    <span>📎</span>
+                </button>
+                <textarea 
+                    class="chat-input" 
+                    id="chat-input" 
+                    placeholder="Message Coheisty AI..."
+                    rows="1"
+                    style="padding-left: 3rem;"></textarea>
+                <button class="send-button" onclick="sendMessage()">
+                    <span class="send-icon">↑</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="upload-modal" id="upload-modal">
+        <div class="upload-content">
+            <h3>Upload Document</h3>
+            <p style="color: #8e8ea0; margin-bottom: 1rem;">Upload a 10-K, annual report, PDF, or paste a company URL for analysis</p>
+            <div class="upload-area" onclick="triggerFileInput()">
+                <div class="upload-icon">📄</div>
+                <p style="color: #ececf1; margin-bottom: 0.5rem;">Click to upload or drag and drop</p>
+                <p style="color: #8e8ea0; font-size: 0.85rem;">PDF, DOC, DOCX, TXT (Max 25MB)</p>
+            </div>
+            <input type="file" id="file-input" accept=".pdf,.doc,.docx,.txt" style="display: none;" onchange="handleFileSelect()">
+            <div class="upload-buttons">
+                <button class="modal-btn modal-btn-secondary" onclick="closeUpload()">Cancel</button>
+                <button class="modal-btn modal-btn-primary" onclick="confirmUpload()">Analyze Document</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isTyping = false;
+        let selectedFile = null;
+
+        // Auto-resize textarea
+        const textarea = document.getElementById('chat-input');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+        });
+
+        // Upload Functions
+        function showUpload() {
+            document.getElementById('upload-modal').classList.add('active');
+        }
+
+        function closeUpload() {
+            document.getElementById('upload-modal').classList.remove('active');
+            selectedFile = null;
+            document.getElementById('file-input').value = '';
+        }
+
+        function triggerFileInput() {
+            document.getElementById('file-input').click();
+        }
+
+        function handleFileSelect(event) {
+            const fileInput = document.getElementById('file-input');
+            if (fileInput.files.length > 0) {
+                selectedFile = fileInput.files[0];
+            }
+        }
+
+        function confirmUpload() {
+            closeUpload();
+            hasCompanyData = true; // Set flag that we have data now
+            
+            if (selectedFile && selectedFile.name) {
+                addUserMessage(`I've uploaded ${selectedFile.name} for analysis`);
+            } else {
+                addUserMessage('Analyze company documents and identify cybersecurity opportunities');
+            }
+            
+            // Show document analysis first
+            setTimeout(() => {
+                simulateAIResponse('analyze uploaded document');
+                
+                // Then automatically show additional capabilities
+                setTimeout(() => {
+                    addAIMessage(`
+                        <h4>📊 What would you like me to generate next?</h4>
+                        <p>Now that I've analyzed the company data, I can provide:</p>
+                        <ul>
+                            <li>🎯 <strong>Threat Assessment</strong> - Ransomware risks and attack vectors</li>
+                            <li>📊 <strong>SWOT Analysis</strong> - Complete security posture analysis</li>
+                            <li>🗺️ <strong>Strategic Solution Mapping</strong> - How Coheisty addresses their risks</li>
+                            <li>💥 <strong>Risk Simulation</strong> - "What if" attack scenarios with ROI</li>
+                            <li>✅ <strong>Compliance Check</strong> - HIPAA, SOC 2, GDPR status</li>
+                            <li>📋 <strong>Pre-Call Brief</strong> - Strategic recommendations for your meeting</li>
+                        </ul>
+                        <p style="margin-top: 1rem;">Just ask for any of these, or type "show me everything" for the complete analysis package.</p>
+                    `);
+                }, 2000);
+            }, 500);
+            
+            selectedFile = null;
+        }
+
+        // Send Message
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (message === '' || isTyping) return;
+            
+            // Clear welcome message if exists
+            const welcome = document.querySelector('.welcome');
+            if (welcome) welcome.remove();
+            
+            addUserMessage(message);
+            input.value = '';
+            input.style.height = 'auto';
+            
+            // Simulate AI response
+            simulateAIResponse(message);
+        }
+
+        function addUserMessage(text) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message-wrapper user';
+            messageDiv.innerHTML = `
+                <div class="message">
+                    <div class="avatar user">You</div>
+                    <div class="message-content">${escapeHtml(text)}</div>
+                </div>
+            `;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function addAIMessage(html) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message-wrapper assistant';
+            messageDiv.innerHTML = `
+                <div class="message">
+                    <div class="avatar assistant">C</div>
+                    <div class="message-content">${html}</div>
+                </div>
+            `;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function showTyping() {
+            const messagesContainer = document.getElementById('chat-messages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message-wrapper assistant';
+            typingDiv.id = 'typing-indicator';
+            typingDiv.innerHTML = `
+                <div class="message">
+                    <div class="avatar assistant">C</div>
+                    <div class="message-content">
+                        <div class="typing-indicator">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(typingDiv);
+            scrollToBottom();
+        }
+
+        function hideTyping() {
+            const typing = document.getElementById('typing-indicator');
+            if (typing) typing.remove();
+        }
+
+        function simulateAIResponse(userMessage) {
+            isTyping = true;
+            showTyping();
+            
+            setTimeout(() => {
+                hideTyping();
+                const response = getAIResponse(userMessage);
+                addAIMessage(response);
+                isTyping = false;
+            }, 1500);
+        }
+
+        // Track if we have company data
+        let hasCompanyData = false;
+
+        function getAIResponse(message) {
+            const lower = message.toLowerCase();
+            
+            // Check if this is a follow-up after uploading data
+            if (lower.includes('uploaded') || lower.includes('analyze') && hasCompanyData) {
+                hasCompanyData = true; // Set flag that we now have data
+                return `
+                    <div style="background: rgba(255, 184, 0, 0.1); border-left: 3px solid #ffb800; padding: 1rem; margin-bottom: 1rem; border-radius: 4px;">
+                        <p style="color: #ffb800; font-weight: 600; margin-bottom: 0.5rem;">📋 Demo Prototype - Example Analysis</p>
+                        <p style="color: #c5c5d2; font-size: 0.85rem;">The analysis below is a demonstration example. The live GPT version will analyze your actual uploaded documents.</p>
+                    </div>
+                    <h4>Company Intelligence Analysis - TechCorp Inc.</h4>
+                    <p><strong>Security Landscape Overview:</strong></p>
+                    <ul>
+                        <li><strong>Industry:</strong> Mid-market SaaS (Healthcare vertical)</li>
+                        <li><strong>Security Maturity:</strong> Level 2 (Developing) - reactive posture</li>
+                        <li><strong>Recent Incident:</strong> Data breach affecting 12K patient records (Q2 2024)</li>
+                        <li><strong>Current Stack:</strong> CrowdStrike (EDR), Palo Alto (Firewall), Splunk (SIEM - underutilized)</li>
+                        <li><strong>Budget:</strong> $2.3M allocated for security improvements (Q3-Q4)</li>
+                        <li><strong>Key Decision Maker:</strong> Sarah Chen (CISO, hired 3 months ago)</li>
+                    </ul>
+                    <p><strong>Strategic Opportunity:</strong> New CISO seeking to modernize stack after incident. High urgency due to upcoming SOC 2 audit.</p>
+                    <p style="margin-top: 1rem; color: #8e8ea0;">💡 Now that I have the company data, you can ask me to generate a SWOT analysis, threat assessment, compliance mapping, or risk simulation.</p>
+                `;
+            }
+            
+            // Company Intelligence Analysis - needs upload first
+            if (lower.includes('analyze') || lower.includes('security landscape') || lower.includes('10-k')) {
+                if (!hasCompanyData) {
+                    return `
+                        <h4>I need company information first</h4>
+                        <p>To analyze the company's security landscape, please provide:</p>
+                        <ul>
+                            <li>Company 10-K or annual report</li>
+                            <li>Website URL</li>
+                            <li>Security documentation</li>
+                            <li>Or just tell me the company name and industry</li>
+                        </ul>
+                        <p style="margin-top: 1rem;">Click the 📎 paperclip icon to upload documents, or simply tell me: "The company is [Name] in the [Industry] sector"</p>
+                    `;
+                }
+            }
+            
+            // Threat Assessment - needs company data
+            if (lower.includes('threat') || lower.includes('ransomware')) {
+                if (!hasCompanyData) {
+                    return `
+                        <h4>I need company information first</h4>
+                        <p>To perform a threat assessment, I need to understand the company's profile and industry.</p>
+                        <p>Please either:</p>
+                        <ul>
+                            <li>Upload company documents using the 📎 button</li>
+                            <li>Tell me: "The company is [Name] in [Industry]"</li>
+                            <li>Share their website URL</li>
+                        </ul>
+                    `;
+                }
+                return `
+                    <h4>Threat Assessment & Ransomware Analysis</h4>
+                    <p><strong>Primary Threat Vectors:</strong></p>
+                    <ul>
+                        <li><strong>Ransomware Risk: HIGH</strong> - Healthcare sector targeted 3x more than average</li>
+                        <li><strong>Most Likely Attack:</strong> LockBit 3.0 or BlackCat (ALPHV) - both targeting healthcare</li>
+                        <li><strong>Entry Points:</strong> Phishing (45% likelihood), unpatched VPN (30%), supply chain (15%)</li>
+                        <li><strong>Estimated Impact:</strong> $4.2M average cost (downtime + ransom + recovery)</li>
+                        <li><strong>Current Detection Gap:</strong> No EDR on cloud infrastructure, limited email security</li>
+                    </ul>
+                    <p><strong>Coheisty Solution Mapping:</strong> Our platform detects ransomware behavior patterns 73% faster than traditional SIEM, preventing encryption before spread.</p>
+                `;
+            }
+            
+            // SWOT Analysis - needs company data
+            if (lower.includes('swot')) {
+                if (!hasCompanyData) {
+                    return `
+                        <h4>I need company information first</h4>
+                        <p>To generate a SWOT analysis of their security posture, I need information about the company.</p>
+                        <p>Please provide:</p>
+                        <ul>
+                            <li>Company documents (10-K, security reports, etc.)</li>
+                            <li>Company name and industry</li>
+                            <li>Website URL</li>
+                        </ul>
+                        <p style="margin-top: 1rem;">Use the 📎 button to upload, or tell me about the company.</p>
+                    `;
+                }
+                return `
+                    <h4>Security Posture SWOT Analysis</h4>
+                    <p><strong>Strengths:</strong></p>
+                    <ul>
+                        <li>Strong endpoint protection with CrowdStrike</li>
+                        <li>New CISO with incident response background</li>
+                        <li>Board-level awareness post-breach</li>
+                    </ul>
+                    <p><strong>Weaknesses:</strong></p>
+                    <ul>
+                        <li>Fragmented security stack (5+ point solutions)</li>
+                        <li>Limited threat correlation capabilities</li>
+                        <li>Manual compliance reporting (50+ hours/month)</li>
+                        <li>Alert fatigue: 2,400 alerts/day, 95% false positives</li>
+                    </ul>
+                    <p><strong>Opportunities:</strong></p>
+                    <ul>
+                        <li>Budget approved for platform consolidation</li>
+                        <li>SOC 2 audit deadline creates urgency</li>
+                        <li>Cloud migration planned (AWS expansion)</li>
+                    </ul>
+                    <p><strong>Threats:</strong></p>
+                    <ul>
+                        <li>Increased ransomware targeting healthcare</li>
+                        <li>Regulatory scrutiny post-breach</li>
+                        <li>Competition from 3 other vendors in evaluation</li>
+                    </ul>
+                `;
+            }
+            
+            // Strategic Alignment - needs company data
+            if (lower.includes('map') || lower.includes('solution') || lower.includes('align')) {
+                if (!hasCompanyData) {
+                    return `
+                        <h4>I need company information first</h4>
+                        <p>To map our solutions to their specific risks, I need to understand their security challenges.</p>
+                        <p>Please share company information through:</p>
+                        <ul>
+                            <li>Document upload (📎 button)</li>
+                            <li>Company name and details</li>
+                            <li>Website URL</li>
+                        </ul>
+                    `;
+                }
+                return `
+                    <h4>Strategic Solution Mapping</h4>
+                    <p><strong>Risk → Coheisty Solution Alignment:</strong></p>
+                    <ul>
+                        <li><strong>Risk: Ransomware</strong> → AI-powered behavior detection + automated isolation (73% faster response)</li>
+                        <li><strong>Risk: Compliance gaps</strong> → Automated SOC 2, HIPAA reporting (saves 50+ hrs/month)</li>
+                        <li><strong>Risk: Alert fatigue</strong> → Smart correlation reduces alerts by 87%</li>
+                        <li><strong>Risk: Tool sprawl</strong> → Unified platform replaces 3 point solutions (35% cost savings)</li>
+                        <li><strong>Risk: Cloud blind spots</strong> → Native AWS/Azure integration with real-time monitoring</li>
+                    </ul>
+                    <p><strong>Unique Value Prop:</strong> Only solution that combines SIEM, EDR orchestration, and compliance automation in one platform.</p>
+                `;
+            }
+            
+            // Risk Simulation - needs company data
+            if (lower.includes('simulation') || lower.includes('what if') || lower.includes('scenario')) {
+                if (!hasCompanyData) {
+                    return `
+                        <h4>I need company information first</h4>
+                        <p>To run an accurate risk simulation, I need details about the company's environment.</p>
+                        <p>Please provide:</p>
+                        <ul>
+                            <li>Company documents</li>
+                            <li>Industry and size information</li>
+                            <li>Current security stack (if known)</li>
+                        </ul>
+                        <p style="margin-top: 1rem;">Once I have this, I can simulate realistic attack scenarios with ROI calculations.</p>
+                    `;
+                }
+                return `
+                    <h4>Risk Simulation: Ransomware Attack Scenario</h4>
+                    <p><strong>Scenario:</strong> LockBit 3.0 ransomware enters via phishing email on Monday 9 AM</p>
+                    
+                    <p><strong>WITHOUT Coheisty (Current State):</strong></p>
+                    <ul>
+                        <li><strong>Hour 1:</strong> User clicks link, malware downloads</li>
+                        <li><strong>Hour 4:</strong> Lateral movement begins, first alert in Splunk (buried in 2,400 daily alerts)</li>
+                        <li><strong>Hour 12:</strong> SOC analyst identifies suspicious activity</li>
+                        <li><strong>Hour 24:</strong> 127 systems encrypted, operations halted</li>
+                        <li><strong>Total Impact:</strong> $4.2M (72 hours downtime, ransom demand, recovery)</li>
+                    </ul>
+                    
+                    <p><strong>WITH Coheisty:</strong></p>
+                    <ul>
+                        <li><strong>Minute 3:</strong> AI detects anomalous behavior pattern</li>
+                        <li><strong>Minute 5:</strong> Automated isolation of infected endpoint</li>
+                        <li><strong>Minute 15:</strong> Threat contained, incident brief generated</li>
+                        <li><strong>Total Impact:</strong> $12K (2 hours analyst time, 1 system reimaged)</li>
+                    </ul>
+                    
+                    <p><strong>ROI:</strong> $4.19M saved on single incident. Platform pays for itself 14x over.</p>
+                `;
+            }
+            
+            // Compliance Mapping - needs company data
+            if (lower.includes('compliance') || lower.includes('hipaa') || lower.includes('soc2') || lower.includes('gdpr')) {
+                if (!hasCompanyData) {
+                    return `
+                        <h4>I need company information first</h4>
+                        <p>To check compliance status, I need to know about the company's industry and current security controls.</p>
+                        <p>Please provide:</p>
+                        <ul>
+                            <li>Company documents or compliance reports</li>
+                            <li>Industry (determines which standards apply)</li>
+                            <li>Geographic regions served</li>
+                        </ul>
+                        <p style="margin-top: 1rem;">This helps me assess HIPAA, SOC 2, GDPR, and other relevant compliance requirements.</p>
+                    `;
+                }
+                return `
+                    <h4>Compliance Status Assessment</h4>
+                    <p><strong>HIPAA Compliance:</strong></p>
+                    <ul>
+                        <li>✅ Encryption at rest and in transit</li>
+                        <li>⚠️ Access logging incomplete (62% coverage)</li>
+                        <li>❌ Automated breach notification system missing</li>
+                        <li><strong>Gap:</strong> Manual audit trail = 40 hours/month</li>
+                        <li><strong>Coheisty Fix:</strong> Automated HIPAA reporting dashboard + real-time alerts</li>
+                    </ul>
+                    
+                    <p><strong>SOC 2 Type II:</strong></p>
+                    <ul>
+                        <li>⚠️ Audit in 90 days - current readiness: 68%</li>
+                        <li>❌ Continuous monitoring gaps</li>
+                        <li>❌ Change management documentation insufficient</li>
+                        <li><strong>Coheisty Fix:</strong> Pre-built SOC 2 controls with automated evidence collection</li>
+                    </ul>
+                    
+                    <p><strong>GDPR (EU customers):</strong></p>
+                    <ul>
+                        <li>✅ Data residency controls</li>
+                        <li>⚠️ Breach notification workflow manual (must be <72 hrs)</li>
+                        <li><strong>Coheisty Fix:</strong> Automated breach detection + notification workflow</li>
+                    </ul>
+                    
+                    <p><strong>Time Savings:</strong> 65 hours/month recovered from automated compliance reporting</p>
+                `;
+            }
+            
+            // Handle when user provides company info
+            if (lower.includes('company is') || lower.includes('company:') || lower.includes('analyzing')) {
+                hasCompanyData = true;
+                return `
+                    <h4>Company Information Received</h4>
+                    <p>Perfect! I now have the company information and I'm analyzing their security landscape.</p>
+                    <p>I can now help you with:</p>
+                    <ul>
+                        <li>✅ Complete company intelligence analysis</li>
+                        <li>✅ Threat assessment and ransomware risk</li>
+                        <li>✅ SWOT analysis of security posture</li>
+                        <li>✅ Strategic solution mapping</li>
+                        <li>✅ Risk simulation scenarios</li>
+                        <li>✅ Compliance status (HIPAA, SOC 2, GDPR)</li>
+                    </ul>
+                    <p style="margin-top: 1rem;">What would you like me to generate first?</p>
+                `;
+            }
+            
+            // Handle when user wants to see everything
+            if (lower.includes('show me everything') || lower.includes('complete analysis') || lower.includes('full package')) {
+                return `
+                    <h4>📦 Complete Intelligence Package - Generating All Analyses...</h4>
+                    <p style="color: #00c2ff;">This will take a moment as I generate all 6 comprehensive reports...</p>
+                `;
+            }
+            if (lower.includes('discovery') || lower.includes('questions')) {
+                return `
+                    <h4>Discovery Questions</h4>
+                    <p>Here are tailored questions for your prospect:</p>
+                    <ul>
+                        <li><strong>Security Posture:</strong> "Can you walk me through your current threat detection and response process?"</li>
+                        <li><strong>Recent Incident:</strong> "How has the recent security incident changed your priorities?"</li>
+                        <li><strong>Tool Stack:</strong> "What security tools are you using? How well do they integrate?"</li>
+                        <li><strong>Compliance Burden:</strong> "How much time does your team spend on compliance reporting each month?"</li>
+                        <li><strong>Alert Fatigue:</strong> "How many security alerts does your team handle daily? What's your false positive rate?"</li>
+                        <li><strong>Decision Process:</strong> "Who else is involved in evaluating security solutions?"</li>
+                        <li><strong>Timeline:</strong> "How does your upcoming audit impact your timeline?"</li>
+                    </ul>
+                `;
+            }
+            
+            // Pre-Call Brief
+            if (lower.includes('brief') || lower.includes('pre-call')) {
+                return `
+                    <h4>Pre-Call Brief with Strategic Recommendations</h4>
+                    <p><strong>Company:</strong> TechCorp Inc.</p>
+                    <p><strong>Context:</strong> Mid-market healthcare SaaS, recent breach, new CISO, SOC 2 audit in 90 days</p>
+                    
+                    <p><strong>Lead With:</strong></p>
+                    <ul>
+                        <li>Ransomware simulation showing $4.2M savings potential</li>
+                        <li>SOC 2 automated compliance (solves immediate pain point)</li>
+                        <li>Alert reduction case study (healthcare peer: 87% reduction)</li>
+                    </ul>
+                    
+                    <p><strong>Strategic Recommendations:</strong></p>
+                    <ul>
+                        <li>Position as complement to CrowdStrike, not replacement</li>
+                        <li>Emphasize CISO's quick win: automated compliance for upcoming audit</li>
+                        <li>Reference recent healthcare breaches to create urgency</li>
+                        <li>Offer pilot: SOC 2 compliance module (30-day trial)</li>
+                    </ul>
+                    
+                    <p><strong>Recommended Opening:</strong> "Sarah, I know you're 90 days out from your SOC 2 audit after the recent incident. I wanted to show you how we helped a similar healthcare SaaS company automate their compliance and prevent a ransomware attack that would have cost them $4M. Can I walk you through a quick simulation?"</p>
+                `;
+            }
+            
+            // Default response
+            return `
+                <p>I'm your cybersecurity sales intelligence partner. I can help with:</p>
+                <ul>
+                    <li><strong>Company Intelligence:</strong> Deep analysis of security landscape and opportunities</li>
+                    <li><strong>Threat Assessment:</strong> Ransomware risk and attack vector analysis</li>
+                    <li><strong>SWOT Analysis:</strong> Security posture strengths, weaknesses, opportunities, threats</li>
+                    <li><strong>Strategic Alignment:</strong> Map Coheisty solutions to specific risks</li>
+                    <li><strong>Risk Simulations:</strong> "What if" scenarios showing impact and ROI</li>
+                    <li><strong>Compliance Mapping:</strong> HIPAA, SOC 2, GDPR status and gaps</li>
+                    <li><strong>Discovery Questions:</strong> Tailored questions for effective conversations</li>
+                    <li><strong>Pre-Call Briefs:</strong> Strategic recommendations and talking points</li>
+                </ul>
+                <p>What would you like to explore?</p>
+            `;
+        }
+
+        // Use Example
+        function useExample(text) {
+            document.getElementById('chat-input').value = text;
+            document.getElementById('chat-input').focus();
+        }
+
+        // Clear Chat
+        function clearChat() {
+            const messagesContainer = document.getElementById('chat-messages');
+            messagesContainer.innerHTML = `
+                <div class="welcome">
+                    <h2>Coheisty AI Sales Assistant</h2>
+                    <p>I'm your cybersecurity sales intelligence partner. I analyze companies, assess threats, generate strategy, and help you close deals faster.</p>
+                    
+                    <div class="example-prompts">
+                        <div class="example-prompt" onclick="showUpload()">
+                            📄 Analyze a company's security landscape and identify opportunities
+                        </div>
+                        <div class="example-prompt" onclick="useExample('Perform a threat assessment and identify ransomware risks')">
+                            🎯 Perform a threat assessment and identify ransomware risks
+                        </div>
+                        <div class="example-prompt" onclick="useExample('Generate a SWOT analysis for their security posture')">
+                            📊 Generate a SWOT analysis for their security posture
+                        </div>
+                        <div class="example-prompt" onclick="useExample('Map our solutions to their specific security risks')">
+                            🗺️ Map our solutions to their specific security risks
+                        </div>
+                        <div class="example-prompt" onclick="useExample('Run a risk simulation: What if they experience a ransomware attack?')">
+                            💥 Run a risk simulation: What if they experience a ransomware attack?
+                        </div>
+                        <div class="example-prompt" onclick="useExample('Check their compliance status for HIPAA, SOC2, and GDPR')">
+                            ✅ Check their compliance status for HIPAA, SOC2, and GDPR
+                        </div>
+                        <div class="example-prompt" onclick="useExample('Generate discovery questions for a healthcare CISO')">
+                            💬 Generate discovery questions for a healthcare CISO
+                        </div>
+                        <div class="example-prompt" onclick="useExample('Create a pre-call brief with strategic recommendations')">
+                            📋 Create a pre-call brief with strategic recommendations
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Scroll to bottom
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('chat-messages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Enter to send, Shift+Enter for new line
+        document.getElementById('chat-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
